@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ short_symbol }} — Stock Market Prediction{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('main.home') }}">← All stocks</a>
+
+<header class="top">
+  <div>
+    <h1>{{ short_symbol }}</h1>
+    <p class="muted">{{ company }}</p>
+  </div>
+  <span class="badge {{ 'open' if market_open else 'closed' }}">
+    <span class="dot"></span>{{ 'Market open' if market_open else 'Market closed' }}
+  </span>
+</header>
+
+<section class="stats">
+  <div class="stat"><span class="label">Last price</span><span class="value">{{ snapshot.current_price|money }}</span></div>
+  <div class="stat"><span class="label">Day high</span><span class="value">{{ snapshot.day_high|money }}</span></div>
+  <div class="stat"><span class="label">Day low</span><span class="value">{{ snapshot.day_low|money }}</span></div>
+  <div class="stat"><span class="label">Volume</span><span class="value">{{ snapshot.volume|volume }}</span></div>
+  <div class="stat"><span class="label">52-week high</span><span class="value">{{ snapshot.week52_high|money }}</span></div>
+  <div class="stat"><span class="label">52-week low</span><span class="value">{{ snapshot.week52_low|money }}</span></div>
+</section>
+<p class="muted small">Prices as of {{ snapshot.as_of.strftime('%d %b %Y') }} (Yahoo Finance data can be delayed).</p>
+
+<section class="panel">
+  <h2>Forecast for {{ pred_date.strftime('%A, %d %b %Y') }}</h2>
+  {% if prediction %}
+    {% set change = (prediction.close / prediction.last_close - 1) * 100 %}
+    <div class="forecast">
+      <div class="stat">
+        <span class="label">Predicted close</span>
+        <span class="value {{ 'up' if change >= 0 else 'down' }}">{{ prediction.close|money }}</span>
+        <span class="muted small">± {{ prediction.band|money }} · {{ '%+.2f'|format(change) }}% vs last close</span>
+      </div>
+      <div class="stat">
+        <span class="label">Predicted high</span>
+        <span class="value amber">{{ prediction.high|money }}</span>
+      </div>
+    </div>
+
+    {% set bt = prediction.backtest %}
+    <h3>How reliable is this?</h3>
+    <p class="muted small">
+      Backtest: the model was repeatedly trained on the past and tested on days it had never seen
+      ({{ bt.folds }} walk-forward folds, {{ prediction.train_rows }} training days).
+    </p>
+    <ul class="metrics">
+      <li><span>Model average error</span><strong>{{ '%.2f'|format(bt.model_mae) }}%</strong></li>
+      <li><span>"Tomorrow = today" error</span><strong>{{ '%.2f'|format(bt.naive_mae) }}%</strong></li>
+      <li><span>Up/down called correctly</span><strong>{{ '%.1f'|format(bt.direction_accuracy) }}%</strong></li>
+    </ul>
+    <p class="verdict {{ 'good' if bt.beats_naive else 'weak' }}">
+      {% if bt.beats_naive %}
+        On this stock the model was slightly more accurate than simply assuming no change. Daily moves
+        are still very noisy, so treat the range above as the realistic spread.
+      {% else %}
+        On this stock the model did not beat "tomorrow = today" in the backtest, so treat this forecast
+        as low confidence. (A coin flip gets the direction right 50% of the time.)
+      {% endif %}
+    </p>
+  {% else %}
+    <p class="muted">Not enough clean price history to train a reliable model for this stock.</p>
+  {% endif %}
+</section>
+
+<nav class="periods" aria-label="Chart period">
+  {% for key, label in period_buttons.items() %}
+    <a class="period {{ 'active' if key == period }}"
+       href="{{ url_for('main.stock_detail', symbol=symbol, period=key) }}">{{ label }}</a>
+  {% endfor %}
+</nav>
+
+<section class="chart">{{ chart_html|safe }}</section>
+{% endblock %}

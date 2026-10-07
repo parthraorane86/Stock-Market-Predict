@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="top">
+  <div>
+    <h1>Stock Market Prediction</h1>
+    <p class="muted">Next-day forecasts for {{ stocks|length }} NSE stocks</p>
+  </div>
+  <span class="badge {{ 'open' if market_open else 'closed' }}">
+    <span class="dot"></span>{{ 'Market open' if market_open else 'Market closed' }}
+  </span>
+</header>
+
+<input id="search" class="search" type="search" placeholder="Search by name or symbol"
+       aria-label="Search stocks" autocomplete="off">
+
+<section class="grid" id="grid">
+  {% for symbol, name in stocks.items() %}
+  <a class="card" href="{{ url_for('main.stock_detail', symbol=symbol) }}"
+     data-search="{{ (symbol ~ ' ' ~ name)|lower }}">
+    <span class="card-symbol">{{ symbol.removesuffix('.NS') }}</span>
+    <span class="card-name">{{ name }}</span>
+  </a>
+  {% endfor %}
+</section>
+<p id="empty" class="muted" hidden>No stocks match your search.</p>
+
+<script>
+  const search = document.getElementById("search");
+  const cards = document.querySelectorAll(".card");
+  const empty = document.getElementById("empty");
+  search.addEventListener("input", () => {
+    const q = search.value.trim().toLowerCase();
+    let shown = 0;
+    cards.forEach(card => {
+      const match = card.dataset.search.includes(q);
+      card.hidden = !match;
+      if (match) shown++;
+    });
+    empty.hidden = shown > 0;
+  });
+</script>
+{% endblock %}

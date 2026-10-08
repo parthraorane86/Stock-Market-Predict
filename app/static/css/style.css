@@ -7,6 +7,12 @@
   --up: #00d4a0;
   --down: #f87171;
   --amber: #f59e0b;
+  color-scheme: dark;            /* dark scrollbars / native controls */
+}
+
+html {
+  -webkit-text-size-adjust: 100%;   /* stop iOS inflating text in landscape */
+  -webkit-tap-highlight-color: transparent;
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +25,12 @@ body {
   line-height: 1.5;
 }
 
-.page { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+.page {
+  max-width: 1100px; margin: 0 auto;
+  /* env(safe-area-*) keeps content clear of notches / rounded corners */
+  padding: calc(24px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+           calc(48px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
 
 h1 { font-family: "Space Mono", monospace; font-size: 1.6rem; margin: 0; }
 h2 { font-size: 1.1rem; margin: 0 0 14px; }
@@ -39,7 +50,10 @@ a:focus-visible, input:focus-visible { outline: 2px solid var(--up); outline-off
   gap: 12px; margin-bottom: 20px;
 }
 
-.back { display: inline-block; margin-bottom: 14px; color: var(--muted); text-decoration: none; }
+.back {
+  display: inline-flex; align-items: center; min-height: 44px; padding-right: 16px; margin-bottom: 6px;
+  color: var(--muted); text-decoration: none;
+}
 .back:hover { color: var(--text); }
 
 .badge {
@@ -63,18 +77,21 @@ a:focus-visible, input:focus-visible { outline: 2px solid var(--up); outline-off
   text-decoration: none; background: var(--panel);
   border: 1px solid var(--border); border-radius: 10px;
 }
-.card:hover { border-color: var(--up); }
+.card { min-height: 64px; justify-content: flex-start; }
+.card:active { border-color: var(--up); background: #0f2230; }
+@media (hover: hover) { .card:hover { border-color: var(--up); } }
 .card[hidden] { display: none; }
 .card-symbol { font-family: "Space Mono", monospace; font-weight: 700; }
 .card-name { color: var(--muted); font-size: 0.85rem; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 8px; }
 .stat {
+  min-width: 0;
   display: flex; flex-direction: column; gap: 2px; padding: 12px 14px;
   background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
 }
 .label { color: var(--muted); font-size: 0.78rem; }
-.value { font-family: "Space Mono", monospace; font-size: 1.15rem; font-weight: 700; }
+.value { font-family: "Space Mono", monospace; font-size: 1.15rem; font-weight: 700; overflow-wrap: anywhere; }
 
 .panel {
   margin: 20px 0; padding: 20px;
@@ -96,17 +113,38 @@ a:focus-visible, input:focus-visible { outline: 2px solid var(--up); outline-off
 
 .periods { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 12px; }
 .period {
-  padding: 6px 14px; text-decoration: none; font-size: 0.85rem; color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 52px; padding: 6px 14px; text-decoration: none; font-size: 0.85rem; color: var(--muted);
   background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
 }
-.period:hover { color: var(--text); }
+@media (hover: hover) { .period:hover { color: var(--text); } }
+.period:active { border-color: var(--up); }
 .period.active { color: var(--bg); background: var(--up); border-color: var(--up); font-weight: 700; }
 
 .chart { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+/* Height lives in CSS (not in the Plotly layout) so it can change per screen size. */
+.chart .plotly-graph-div { height: 580px !important; }
 
 .disclaimer { margin-top: 32px; color: var(--muted); font-size: 0.8rem; text-align: center; }
 
+/* ── Phones ───────────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   .top { flex-direction: column; }
   h1 { font-size: 1.3rem; }
+
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .card { padding: 12px; }
+  .card-name { font-size: 0.8rem; }
+
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .panel { padding: 16px; }
+  .forecast .value { font-size: 1.35rem; }
+  .metrics li { flex-direction: column; gap: 2px; }   /* label above value, no cramped wrapping */
+
+  /* 8 period buttons -> tidy 4 x 2 grid of big tap targets */
+  .periods { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .period { min-width: 0; }
+
+  /* shorter chart that never fills the whole screen (also fine in landscape) */
+  .chart .plotly-graph-div { height: clamp(320px, 60vh, 420px) !important; }
 }

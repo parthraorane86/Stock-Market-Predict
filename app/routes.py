@@ -38,12 +38,13 @@ def stock_detail(symbol: str):
     pred_date = next_trading_day(history.index[-1].date())
     company = STOCKS[symbol]
 
-    chart_html = build_chart(chart_data, f"{company} — {PERIODS[period]}", prediction, pred_date)
+    short_symbol = symbol.removesuffix(".NS")
+    chart_html = build_chart(chart_data, f"{short_symbol} · {PERIODS[period]}", prediction, pred_date)
 
     return render_template(
         "stock.html",
         symbol=symbol,
-        short_symbol=symbol.removesuffix(".NS"),
+        short_symbol=short_symbol,
         company=company,
         period=period,
         period_buttons=PERIOD_BUTTONS,

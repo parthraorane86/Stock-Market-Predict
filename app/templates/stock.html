@@ -72,4 +72,22 @@
 </nav>
 
 <section class="chart">{{ chart_html|safe }}</section>
+
+<script>
+  /* On touch screens a chart that captures finger drags traps the page scroll.
+     Turn drag/zoom off there; tapping a candle still shows its tooltip. */
+  (function () {
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    let tries = 0;
+    (function lock() {
+      const gd = document.querySelector(".chart .js-plotly-plot");
+      if (gd && window.Plotly && gd._fullLayout) {
+        Plotly.relayout(gd, { dragmode: false, "xaxis.fixedrange": true, "xaxis2.fixedrange": true,
+                              "yaxis.fixedrange": true, "yaxis2.fixedrange": true });
+      } else if (tries++ < 40) {
+        setTimeout(lock, 150);
+      }
+    })();
+  })();
+</script>
 {% endblock %}

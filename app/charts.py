@@ -50,12 +50,12 @@ def build_chart(data: pd.DataFrame, title: str, prediction: Prediction | None,
     ), row=2, col=1)
 
     fig.update_layout(
-        title=dict(text=title, font=dict(family="Space Mono", size=13, color="#94a3b8")),
+        title=dict(text=title, font=dict(family="Space Mono, monospace", size=13, color="#94a3b8")),
         template="plotly_dark", paper_bgcolor="#0b0f1a", plot_bgcolor="#111827",
         hovermode="x unified", xaxis_rangeslider_visible=False,
         legend=dict(orientation="h", yanchor="top", y=-0.08, xanchor="left", x=0,
                     font=dict(size=11), bgcolor="rgba(0,0,0,0)"),
-        height=580, margin=dict(l=0, r=0, t=45, b=20), autosize=True,
+        margin=dict(l=0, r=0, t=45, b=20), autosize=True,   # height comes from CSS
     )
     fig.update_xaxes(gridcolor="#1e2d45", zeroline=False,
                      rangebreaks=[dict(bounds=["sat", "mon"])])   # hide weekend gaps

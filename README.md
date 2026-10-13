@@ -1,5 +1,7 @@
 # Stock Market Prediction
 
+🔗 **Live app:** [https://stock-market-predictor-advance.onrender.com/](https://stock-market-predictor-advance.onrender.com/)
+
 A Flask web app that shows live-ish charts for 40 NSE stocks and forecasts the next trading day's
 **close** and **high** with a machine-learning model. Every forecast comes with an honest backtest
 so you can see how much to trust it.
